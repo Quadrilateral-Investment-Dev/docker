@@ -1,0 +1,84 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.omnisearch</groupId>
+    <artifactId>product-omnisearch</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>product-omnisearch</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <omnisearch.version>1.0-SNAPSHOT</omnisearch.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.omnisearch</groupId>
+            <artifactId>social-intelligence-common</artifactId>
+            <version>${omnisearch.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.omnisearch</groupId>
+            <artifactId>common</artifactId>
+            <version>${omnisearch.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.omnisearch</groupId>
+            <artifactId>framework</artifactId>
+            <version>${omnisearch.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.omnisearch</groupId>
+            <artifactId>datasource-mgt</artifactId>
+            <version>${omnisearch.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.omnisearch</groupId>
+            <artifactId>people-finder</artifactId>
+            <version>${omnisearch.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <encoding>UTF-8</encoding>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/resources</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

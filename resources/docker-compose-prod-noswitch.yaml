@@ -1,0 +1,235 @@
+version: "2"
+services:
+#  db:
+#    image: mysql:8.0
+#    container_name: db
+#    restart: unless-stopped
+#    ports:
+#      - "127.0.0.1:3306:3306"
+#    cap_add:
+#      - SYS_NICE
+#    environment:
+#      MYSQL_ROOT_PASSWORD: "coflex"
+#      MYSQL_USER: "coflex"
+#      MYSQL_PASSWORD: "coflex"
+#      MYSQL_DATABASE: "ibis"
+#    volumes:
+#      - "mysql-data:/var/lib/mysql"
+#      - "./mysql/dbscript:/docker-entrypoint-initdb.d"
+
+  psql:
+    restart: unless-stopped
+    container_name: psql
+    image: timescale/timescaledb:latest-pg11
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_PASSWORD: "coflex"
+      POSTGRES_USER: "coflex"
+      POSTGRES_DB: "ibis"
+    volumes:
+      - "psql-data:/var/lib/postgresql/data"
+      - "./psql/dbscript:/docker-entrypoint-initdb.d"
+
+  influxdb:
+    restart: unless-stopped
+    container_name: influxdb
+    image: "influxdb:1.7-alpine"
+    ports:
+      - "127.0.0.1:8086:8086"
+      - "127.0.0.1:8083:8083"
+    volumes:
+      - "influxdb-data:/var/lib/influxdb"
+    environment:
+      INFLUXDB_DB: "coflex"
+      INFLUXDB_HTTP_AUTH_ENABLED: "true"
+      INFLUXDB_ADMIN_USER: "coflex"
+      INFLUXDB_ADMIN_PASSWORD: "coflex"
+
+  mb:
+    restart: unless-stopped
+    container_name: mb
+    image: "nats:2.8.4"
+    ports:
+      - "127.0.0.1:4222:4222"
+      - "127.0.0.1:8222:8222"
+    entrypoint: "/nats-server -c ./server-conf/server.conf -js"
+    volumes:
+      - "./mb/conf:/server-conf"
+      - "./mb/certs:/certs"
+      - "mb-data:/data"
+
+  load_balancer:
+    image: nginx
+    restart: unless-stopped
+    container_name: load_balancer
+    network_mode: host
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - "./nginx/sites-enabled:/etc/nginx/sites-enabled"
+      - "./nginx/certs:/etc/nginx/certs"
+      - './nginx/nginx.conf:/etc/nginx/nginx.conf'
+
+  controller:
+    restart: unless-stopped
+    container_name: controller
+    build:
+      context: ./controller
+      dockerfile: Dockerfile
+    image: "ibis:controller"
+    volumes:
+      - "controller-conf:/home/controller/conf"
+      - "./controller/keystore:/keystore"
+    ports:
+      - "6633:6633"
+    environment:
+      MODE: PASSIVE
+      IBIS_MIRROR_PORT: 2
+      NATS_URL: "tls://mb:4222"
+      DOCKER_CLUSTER: "test-cluster"
+      NATS_USER: "coflex"
+      NATS_CLUSTER: "test-cluster"
+      NATS_PASSWORD: "openflow"
+      CONTROLLER_MODE: FLOW
+#      STRIP_VLAN_TAGS: 1
+#      DROP_PORTS: "XPORT"
+#      DROP_VLANS: "XDROPV"
+#      IN_PORTS: "XIN"
+#      OUT_PORTS: "XOUT"
+      RATE_LIMIT: 2000
+    links:
+      - mb
+
+  stat-controller:
+    restart: unless-stopped
+    container_name: stat-controller
+    build:
+      context: ./controller
+      dockerfile: DockerfileStat
+    image: "ibis:statcontroller"
+    volumes:
+      - "./controller/keystore:/keystore"
+    ports:
+      - "6634:6634"
+    environment:
+      MODE: PASSIVE
+      IBIS_MIRROR_PORT: 2
+      NATS_URL: "tls://mb:4222"
+      DOCKER_CLUSTER: "test-cluster"
+      NATS_USER: "coflex"
+      NATS_CLUSTER: "test-cluster"
+      NATS_PASSWORD: "openflow"
+      CONTROLLER_MODE: STAT
+      OPENFLOW_PORT: 6634
+    links:
+      - mb
+
+  reporter:
+    restart: unless-stopped
+    image: reporter
+    container_name: reporter
+    ports:
+      - "127.0.0.1:5489:5489"
+    build:
+      context: ./reporter/
+
+  engine:
+    restart: unless-stopped
+    container_name: engine
+    build:
+      context: ./engine
+      dockerfile: Dockerfile
+    network_mode: host
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - './engine/conf:/usr/src/conf'
+      - './engine/logs:/usr/src/logs'
+      - './engine/tmp:/usr/src/tmp'
+      - './suricata/logs:/alerts'
+      - 'knowledge:/usr/src/knowledge'
+      - 'engine-pcaps:/usr/src/resources/pcaps'
+      - 'engine-creds:/usr/src/resources/credentials/deployments'
+#    environment:
+#      MYSQL_HOST_NAME: "db"
+#      NATS_HOST_NAME: "nats"
+#      INFLUX_HOST_NAME: "influxdb"
+#      SURICATA_MGT_HOST_NAME: "suricata-manager"
+#      POSTGRESQL_HOST_NAME: "psql"
+
+  manager:
+    restart: unless-stopped
+    container_name: manager
+    build:
+      context: ./manager
+      dockerfile: Dockerfile
+    network_mode: host
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - "./manager/conf:/usr/src/conf"
+      - "./manager/logs:/usr/src/logs"
+      - "./manager/tmp:/usr/src/tmp"
+      - "./knowledge:/usr/src/knowledge"
+      - "manager-device-types:/usr/src/resources/device-types"
+      - "manager-generated-reports:/usr/src/resources/generated-reports"
+      - "artifacts:/usr/src/resources/artifacts"
+      - "anomaly-ml-inst:/usr/src/resources/ml/instances"
+      - "anomaly-ml-model:/usr/src/resources/ml/models"
+#    environment:
+#      MYSQL_HOST_NAME: "db"
+#      NATS_HOST_NAME: "nats"
+#      INFLUX_HOST_NAME: "influxdb"
+#      SURICATA_MGT_HOST_NAME: "suricata-manager"
+#      POSTGRESQL_HOST_NAME: "psql"
+
+  suricata:
+    restart: unless-stopped
+    container_name: suricata-manager
+    build:
+      context: ./suricata-manager
+      dockerfile: Dockerfile
+    user: root
+    network_mode: host
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./suricata-manager/logs:/var/log/suricata/
+      - ./suricata-manager/resources/suricata/config:/etc/suricata
+    stdin_open: true
+#    ports:
+#      - "34444:34444"
+
+  cp-classifier:
+    restart: unless-stopped
+    container_name: cp-classifier
+    build:
+      context: ./iot-cp-classifier
+      dockerfile: Dockerfile
+    user: root
+    #    network_mode: host
+    privileged: true
+    stdin_open: true
+    ports:
+      - "13013:13013"
+
+volumes:
+#  mysql-data: {}
+  influxdb-data: {}
+  controller-conf: {}
+  psql-data: {}
+  anomaly-ml-inst: {}
+  anomaly-ml-model: {}
+  engine-pcaps: {}
+  manager-device-types: {}
+  manager-generated-reports: {}
+  reporter-data: {}
+  engine-creds: {}
+  artifacts: {}
+  mb-data: {}
+  knowledge: {}

@@ -1,0 +1,292 @@
+productName: ibis
+productVersion: 1.0.0 
+
+nodeId: "manager"
+
+server:
+
+  requestLog:
+      appenders: []
+#      - type: console
+#        layout:
+#          type: access-json
+#          timestampFormat: "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+#          requestHeaders:
+#              - User-Agent
+#              - X-Request-Id
+
+  applicationConnectors:
+    - type: http
+      port: 6000
+    - type: https
+      port: 6443
+      keyStorePath: resources/keystores/coflex.jks
+      keyStorePassword: coflex
+      keyStoreType: JKS
+
+  adminConnectors:
+    - type: http
+      port: 7000
+#    - type: https
+#      port: 7443
+#      keyStorePath: keystores/coflex.jks
+#      keyStorePassword: coflex
+#      keyStoreType: JKS
+#      trustStorePath: /path/to/file
+#      trustStorePassword: changeit
+#      trustStoreType: JKS
+
+
+logging:
+  level: ERROR
+  loggers:
+    com.cyamast.coflex.framework.audit:
+      level: INFO
+      additive: false
+      appenders:
+        - type: file
+          currentLogFilename: logs/audit.log
+          archivedLogFilenamePattern: logs/audit-%d{yyyy-MM-dd}.log
+          logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
+          archivedFileCount: 10
+          timeZone: UTC
+    com.cyamast.coflex: INFO
+
+#    feign: DEBUG
+  appenders:
+    - type: console
+      threshold: INFO
+    - type: file
+      currentLogFilename: logs/coflex.log
+      logFormat: "%-6level [%d{HH:mm:ss.SSS}] [%t] %logger{5} - %X{code} %msg %n"
+      threshold: INFO
+      archive: true
+      archivedLogFilenamePattern: logs/coflex-%d{yyyy-MM-dd}.log
+      archivedFileCount: 10
+      timeZone: UTC
+
+swagger: True
+domainName: localhost
+backendDomainName: localhost:6443
+frontendDomainName: localhost:3000
+
+reinstallFlows: false
+
+keyStore:
+  location: coflex.jks
+  type: JKS
+  password: coflex
+  keyAlias: coflex
+  keyPassword: coflex
+
+trustStore:
+  location: client-truststore.jks
+  type: JKS
+  password: coflex
+
+userMgt:
+  usernameValidationRegex: \S+@\S+\.\S+
+  usernameValidationDescription: "More than 3 characters"
+  emailValidationRegex: \S+@\S+\.\S+
+  emailValidationDescription: "More than 3 characters"
+  passwordValidationRegex: ^[\S]{5,30}$
+  passwordValidationDescription: "Password length should be within 5 to 30 characters"
+  userListPageSize: 10
+  systemRoles:
+    - system-admin
+    - user
+    - network-admin
+    - threat-admin
+    - analyst
+  userRoles:
+    - user
+  readOnly: false
+  captchaVerification: false
+
+  defaultAdminUsername: admin@coflex.com
+  defaultAdminPassword: admin
+  defaultAdminEmail: admin@coflex.com
+  defaultTokenExpiryTimeInMinutes: 1440
+  emailTransportConfiguration:
+    minThreadCount: 8
+    maxThreadCount: 100
+    keepAliveTimeInMillis: 20000
+    jobQueSize: 10000
+    smtpFrom: ayyoobtest@gmail.com
+    smtpHost: smtp.gmail.com
+    smtpPort: 587
+    smtpUsername: ayyoobtest
+    smtpPassword: ayyoobtest@123
+    enable: false
+
+deviceMgt:
+  lifecycle:
+    rootState: GETTING_CLASSIFIED
+    transitions:
+      GETTING_CLASSIFIED: IT_IDENTIFIED, IOT_NEW_TYPE_IDENTIFIED, IOT_TYPE_CLASSIFIED
+      IT_IDENTIFIED: GETTING_CLASSIFIED, IOT_NEW_TYPE_IDENTIFIED, IOT_TYPE_CLASSIFIED
+      IOT_NEW_TYPE_IDENTIFIED: GETTING_CLASSIFIED, IT_IDENTIFIED, IOT_TYPE_CLASSIFIED
+      IOT_TYPE_CLASSIFIED: GETTING_CLASSIFIED, IOT_NEW_TYPE_IDENTIFIED, IT_IDENTIFIED
+  inactiveTimeInHours: 24
+  networkDevices:
+    - dpId: "14cc205133ea"
+      mac: "14:cc:20:51:33:ea"
+      mirrorId: "14cc20"
+      status: ACTIVE
+      properties:
+        GATEWAY_IP: "192.168.1.1"
+        GATEWAY_MAC: "14:cc:20:51:33:ea"
+        DNS_IP: "192.168.1.1"
+
+httpHealthServices:
+#  - influxdb: http://127.0.0.1:8086/ping
+#  - engine: http://127.0.0.1:6001/health
+#  - nats: http://127.0.0.1:8222
+#  - jsreport: https://127.0.0.1:4443
+#  - manager: https://localhost:6449/health
+#  - anomaly-trainer: http://127.0.0.1:6006/health
+
+  - influxdb: http://${INFLUX_HOST_NAME}:8086/ping
+  - engine: http://${ENGINE_HOST_NAME}:6001/health
+  - nats: http://${NATS_HOST_NAME}:8222
+  - jsreport: https://${JSREPORT_HOST_NAME}:5489
+  - manager: https://${MANAGER_HOST_NAME}:6449/health
+  - anomaly-trainer: http://${ANOMALY_HOST_NAME}:6006/health
+
+httpHealthServiceNames:
+  - influxdb: "Timeseries Databases"
+  - engine: "Inference Engines"
+  - nats: "Message Broker"
+  - jsreport: "Report Generator"
+  - manager: "API Manager"
+  - anomaly-trainer: "Model Trainers"
+  - datasources: "Relational Databases"
+
+datasource:
+  migrate: true
+  properties:
+    - datasourceName: user_mgt,device_mgt,mud,system_mgt,pdump,model_mgt,proto_intel,attribute_parser,notifier_profile_mgt
+      jdbcUrl: jdbc:postgresql://${POSTGRESQL_HOST_NAME}:5432/ibis
+      dataSource.user: coflex
+      dataSource.password: coflex
+      initializationFailTimeout: 0
+    - datasourceName: dns_geo
+      jdbcUrl: jdbc:h2:./database/COFLEX_DNS_GEO_DB;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE
+      dataSource.user: coflex
+      dataSource.password: coflex
+      initializationFailTimeout: 0
+      maximumPoolSize: 10
+    - datasourceName: policy_mgt, riskmgt, alert_policy_mgt, threat_intel_mgt, incident_mgt, enriched_flow_alerts
+      jdbcUrl: jdbc:postgresql://${POSTGRESQL_HOST_NAME}:5432/ibis
+      maximumPoolSize: 20
+      dataSource.user: coflex
+      dataSource.password: coflex
+      initializationFailTimeout: 0
+    - datasourceName: runtimeprofilemgt, device_attributes_stream, threat_detection_mgt
+      jdbcUrl: jdbc:postgresql://${POSTGRESQL_HOST_NAME}:5432/ibis
+      maximumPoolSize: 10
+      dataSource.user: coflex
+      dataSource.password: coflex
+      initializationFailTimeout: 0
+
+influx:
+  hostname: ${INFLUX_HOST_NAME}
+  port: 8086
+  username: "coflex"
+  password: "coflex"
+  dbName: "coflex"
+  retentionPolicy:
+    flow_counts: "90d"
+    table_flow_count: "90d"
+    table_flow_manipulation_count: "10d"
+    system_traffic_stats: "90d"
+    device_identifcation_result: "90d"
+    dns_summary: "90d"
+    flow_alerts: "90d"
+    mud_dns_request_anomaly: "90d"
+    mud_dns_response_anomaly: "90d"
+    notifications: "90d"
+    product_metric: "30d"
+    per_min_api_access: "30d"
+    http_auth_session: "90d"
+    mirror_traffic: "10d"
+    per_flow_table_mirror_traffic: "10d"
+    vlan_device_count: "90d"
+    device_props: "90d"
+    runtime_endpoints:  "1825d"
+    mud_flow_attributes: "120d"
+
+tableCount: 10
+
+defaultMirrorSwitchConf:
+  mac: "14:cc:20:51:33:ea"
+  dpid: "14cc205133ea"
+
+nats:
+  uri: nats://${NATS_HOST_NAME}:4222
+  clusterId: "test-cluster"
+  username: "coflex"
+  password: "openflow"
+
+mirrorPorts:
+  - 2
+
+trafficForwardPorts:
+  - 1
+
+assetIdGenerate: false
+deviceFlowControl: MAC
+
+report:
+  cron: "0 0 5 ? * * *"
+  companyName: "CyAmast"
+  username: "admin@coflex.com"
+  password: "admin"
+  endpoint: "https://${REPORT_MGT_HOST_NAME}:5489"
+
+mlManagement:
+  remoteFileServiceEnable: false
+  remoteFileMangementEndpoint: https://${FILE_MGT_HOST_NAME}:6443
+
+netseerConf:
+  username: seer@netseer.com
+  password: seer@123
+
+telegram:
+  emailTransportConfiguration:
+    minThreadCount: 8
+    maxThreadCount: 100
+    keepAliveTimeInMillis: 20000
+    jobQueSize: 10000
+    smtpFrom: ayyoobtest@gmail.com
+    smtpHost: smtp.gmail.com
+    smtpPort: 587
+    smtpUsername: ayyoobtest
+    smtpPassword: ayyoobtest@123
+    enable: true
+
+missingKnowledge:
+  - missing-dhcp-fingerprints
+  - missing-model-role-map
+  - missing-tcp-fingerprints
+
+
+notifierProfileMgtConfig:
+  emailTransportConfiguration:
+    minThreadCount: 8
+    maxThreadCount: 100
+    keepAliveTimeInMillis: 20000
+    jobQueSize: 10000
+    smtpFrom: cyamastemail@gmail.com
+    smtpHost: smtp.gmail.com
+    smtpPort: 587
+    smtpUsername: cyamastemail@gmail.com
+    smtpPassword: mtacvjhndwfakbuj
+    enable: true
+
+
+suricataEndpoint: https://${SURICATA_MGT_HOST_NAME}:34444
+
+
+#deploymentIPAddressBlock:
+#  - "IPADDR"
