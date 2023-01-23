@@ -11,9 +11,9 @@ frontendDomainName: localhost:3000
 datasource:
   migrate: true
   properties:
-    - datasourceName: people-finder
-      jdbcUrl: jdbc:postgresql://${POSTGRESQL_HOST_NAME}:5432/ibis
-      dataSource.user: coflex
-      dataSource.password: coflex
+    - datasourceName: people-finder,project-mgt
+      jdbcUrl: jdbc:postgresql://${POSTGRESQL_HOST_NAME}:5432/omnisearch?useSSL=false
+      dataSource.user: iris
+      dataSource.password: cymophane
       initializationFailTimeout: 0
 

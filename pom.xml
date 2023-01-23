@@ -40,6 +40,16 @@
             <artifactId>people-finder</artifactId>
             <version>${omnisearch.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.omnisearch</groupId>
+            <artifactId>project-mgt-common</artifactId>
+            <version>${omnisearch.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.omnisearch</groupId>
+            <artifactId>project-mgt</artifactId>
+            <version>${omnisearch.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -53,7 +63,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <outputDirectory>${project.build.directory}/modules/lib</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -75,6 +85,7 @@
                                     <directory>${basedir}/resources</directory>
                                 </resource>
                             </resources>
+                            <includeEmptyDirs>true</includeEmptyDirs>
                         </configuration>
                     </execution>
                 </executions>

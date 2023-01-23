@@ -1,0 +1,36 @@
+version: "2"
+services:
+
+  postgresql:
+    restart: unless-stopped
+    container_name: postgresql
+    image: timescale/timescaledb:latest-pg11
+    network_mode: host
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: "cymophane"
+      POSTGRES_USER: "iris"
+      POSTGRES_DB: "omnisearch"
+    volumes:
+      - "psql-data:/var/lib/postgresql/data"
+      - "./psql/dbscript:/docker-entrypoint-initdb.d"
+
+  modules:
+    restart: unless-stopped
+    container_name: omnisearch-modules
+    build:
+      context: ./modules
+      dockerfile: Dockerfile
+    network_mode: host
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - "./modules/conf:/usr/src/conf"
+      - "./modules/logs:/usr/src/logs"
+    environment:
+        JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n"
+        #POSTGRESQL_HOST_NAME: "postgresql"
+volumes:
+    psql-data: {}
