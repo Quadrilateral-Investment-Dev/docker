@@ -14,7 +14,7 @@ services:
       POSTGRES_DB: "omnisearch"
     volumes:
       - "psql-data:/var/lib/postgresql/data"
-      - "./psql/dbscript:/docker-entrypoint-initdb.d"
+      - "./psql/dbscripts:/docker-entrypoint-initdb.d"
 
   modules:
     restart: unless-stopped
