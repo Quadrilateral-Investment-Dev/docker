@@ -4,9 +4,16 @@ productVersion: 1.0.0
 nodeId: "product"
 
 swagger: True
-domainName: localhost
-backendDomainName: localhost:6443
-frontendDomainName: localhost:3000
+domainName: 0.0.0.0
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 8306
+
+  adminConnectors:
+    - type: http
+      port: 7000
 
 datasource:
   migrate: true
