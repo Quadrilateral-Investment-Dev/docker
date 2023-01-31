@@ -30,7 +30,7 @@ services:
       - "./modules/conf:/usr/src/conf"
       - "./modules/logs:/usr/src/logs"
     environment:
-        JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n"
+        JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,address=0.0.0.0:8000,server=y,suspend=n"
         #POSTGRESQL_HOST_NAME: "postgresql"
 volumes:
     psql-data: {}
