@@ -2,55 +2,26 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.omnisearch</groupId>
-    <artifactId>product-omnisearch</artifactId>
+    <groupId>com.intela</groupId>
+    <artifactId>docker</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>product-omnisearch</name>
+    <name>docker</name>
     <url>http://maven.apache.org</url>
-
-    <properties>
-        <omnisearch.version>1.0-SNAPSHOT</omnisearch.version>
-    </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.omnisearch</groupId>
-            <artifactId>social-intelligence-common</artifactId>
-            <version>${omnisearch.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.omnisearch</groupId>
-            <artifactId>common</artifactId>
-            <version>${omnisearch.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.omnisearch</groupId>
-            <artifactId>framework</artifactId>
-            <version>${omnisearch.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.omnisearch</groupId>
-            <artifactId>datasource-mgt</artifactId>
-            <version>${omnisearch.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.omnisearch</groupId>
-            <artifactId>people-finder</artifactId>
-            <version>${omnisearch.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.omnisearch</groupId>
-            <artifactId>project-mgt-common</artifactId>
-            <version>${omnisearch.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.omnisearch</groupId>
-            <artifactId>project-mgt</artifactId>
-            <version>${omnisearch.version}</version>
+            <groupId>com.intela</groupId>
+            <artifactId>realestate-backend</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
+
+    <properties>
+        <springApplication.version>0.0.1-SNAPSHOT</springApplication.version>
+        <springApplication.artifactId>realestate-backend</springApplication.artifactId>
+    </properties>
 
     <build>
         <plugins>
@@ -60,9 +31,17 @@
                     <execution>
                         <phase>install</phase>
                         <goals>
-                            <goal>copy-dependencies</goal>
+                            <goal>copy</goal>
                         </goals>
                         <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${springApplication.artifactId}</artifactId>
+                                    <version>${springApplication.version}</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                            </artifactItems>
                             <outputDirectory>${project.build.directory}/modules/lib</outputDirectory>
                         </configuration>
                     </execution>

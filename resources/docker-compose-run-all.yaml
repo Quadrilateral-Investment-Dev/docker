@@ -1,24 +1,22 @@
 version: "2"
 services:
-
-  postgresql:
-    restart: unless-stopped
-    container_name: postgresql
-    image: timescale/timescaledb:latest-pg11
-    network_mode: host
-    ports:
-      - "5432:5432"
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_realestate
     environment:
-      POSTGRES_PASSWORD: "cymophane"
-      POSTGRES_USER: "iris"
-      POSTGRES_DB: "omnisearch"
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_DATABASE: realestate
+      MYSQL_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    ports:
+      - "3306:3306"
     volumes:
-      - "psql-data:/var/lib/postgresql/data"
-      - "./psql/dbscripts:/docker-entrypoint-initdb.d"
+      - mysql_data:/var/lib/mysql
+      - "./mysql/scripts:/docker-entrypoint-initdb.d"
 
   modules:
     restart: unless-stopped
-    container_name: omnisearch-modules
+    container_name: modules
     build:
       context: ./modules
       dockerfile: Dockerfile
@@ -31,6 +29,5 @@ services:
       - "./modules/logs:/usr/src/logs"
     environment:
         JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,address=0.0.0.0:8000,server=y,suspend=n"
-        #POSTGRESQL_HOST_NAME: "postgresql"
 volumes:
-    psql-data: {}
+  mysql_data: {}
