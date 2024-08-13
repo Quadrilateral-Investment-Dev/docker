@@ -8,6 +8,7 @@ services:
       MYSQL_DATABASE: realestate
       MYSQL_PASSWORD: ""
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      MYSQL_ROOT_HOST: '%'
     ports:
       - "3306:3306"
     volumes:
@@ -16,11 +17,14 @@ services:
 
   modules:
     restart: unless-stopped
+    depends_on:
+      - mysql
     container_name: modules
     build:
       context: ./modules
       dockerfile: Dockerfile
-    network_mode: host
+    ports:
+      - "8090:8090"
     privileged: true
     cap_add:
       - NET_ADMIN
@@ -29,5 +33,6 @@ services:
       - "./modules/logs:/usr/src/logs"
     environment:
         JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,address=0.0.0.0:8000,server=y,suspend=n"
+
 volumes:
   mysql_data: {}
