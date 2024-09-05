@@ -25,6 +25,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8090:8090"
+      - "8000:8000"
     privileged: true
     cap_add:
       - NET_ADMIN
