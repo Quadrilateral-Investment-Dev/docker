@@ -1,0 +1,39 @@
+version: "2"
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_realestate
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_DATABASE: realestate
+      MYSQL_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - "./mysql/scripts:/docker-entrypoint-initdb.d"
+
+
+  test-modules:
+    build:
+      context: ./sources
+      dockerfile: Dockerfile
+    container_name: test-modules
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+    volumes:
+      - "./files:/usr/src/files"
+    environment:
+      #DOCKER_HOST: "tcp://localhost:2375"
+      TESTCONTAINERS_RYUK_DISABLED: "true"
+      #JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,address=0.0.0.0:8000,server=y,suspend=n"
+
+volumes:
+  mysql_data: {}
